@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SoundtrackPrep.App/SoundtrackPrep.App.csproj" />
+    <Project Path="src/SoundtrackPrep.Core/SoundtrackPrep.Core.csproj" />
+  </Folder>
+</Solution>
