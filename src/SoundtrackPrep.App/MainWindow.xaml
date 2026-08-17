@@ -17,7 +17,7 @@
 			<RowDefinition Height="Auto"/>
 			<!-- Button row -->
 			<RowDefinition Height="*"/>
-			<!-- Main content -->
+			<!-- File list -->
 			<RowDefinition Height="Auto"/>
 			<!-- Status bar -->
 		</Grid.RowDefinitions>
@@ -31,35 +31,30 @@
 
 		<!-- Button row -->
 		<Button Grid.Row="1"
-				x:Name="SelectFolderButton"
-				Content="Select Folder…"
-				Width="160"
-				Height="36"
-				FontSize="14"
-				FontWeight="SemiBold"
-				HorizontalAlignment="Left"
-				Margin="0,0,0,16"
-				Click="SelectFolderButton_Click"/>
+                x:Name="SelectFolderButton"
+                Content="Select Folder…"
+                Width="160"
+                Height="36"
+                FontSize="14"
+                FontWeight="SemiBold"
+                HorizontalAlignment="Left"
+                Margin="0,0,0,16"
+                Click="SelectFolderButton_Click"/>
 
-		<!-- Main content area -->
-		<Border Grid.Row="2"
-                Background="#F5F5F5"
-                BorderBrush="#DDD"
-                BorderThickness="1"
-                CornerRadius="4">
-			<TextBlock Text="Main content will go here"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       Foreground="#888"/>
-		</Border>
+		<!-- File list -->
+		<ListBox x:Name="FileList"
+                 Grid.Row="2"
+                 BorderBrush="#DDD"
+                 BorderThickness="1"
+                 FontSize="13"/>
 
 		<!-- Status bar -->
 		<TextBlock x:Name="StatusText"
-				   Grid.Row="3"
-				   Text="Ready"
-				   Margin="0,12,0,0"
-				   FontSize="14"
-				   FontWeight="SemiBold"
-				   Foreground="#222"/>
+                   Grid.Row="3"
+                   Text="Ready"
+                   Margin="0,12,0,0"
+                   FontSize="14"
+                   FontWeight="SemiBold"
+                   Foreground="#222"/>
 	</Grid>
 </Window>
