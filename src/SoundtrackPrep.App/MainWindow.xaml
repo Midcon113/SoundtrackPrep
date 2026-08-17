@@ -5,8 +5,45 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SoundtrackPrep.App"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="SoundtrackPrep"
+        Height="550"
+        Width="900"
+        WindowStartupLocation="CenterScreen">
 
-    </Grid>
+	<Grid Margin="16">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<!-- Header -->
+			<RowDefinition Height="*"/>
+			<!-- Main content -->
+			<RowDefinition Height="Auto"/>
+			<!-- Status bar -->
+		</Grid.RowDefinitions>
+
+		<!-- Header -->
+		<TextBlock Grid.Row="0"
+                   Text="SoundtrackPrep"
+                   FontSize="22"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,16"/>
+
+		<!-- Main content area (empty for now) -->
+		<Border Grid.Row="1"
+                Background="#F5F5F5"
+                BorderBrush="#DDD"
+                BorderThickness="1"
+                CornerRadius="4">
+			<TextBlock Text="Main content will go here"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Foreground="#888"/>
+		</Border>
+
+		<!-- Status bar -->
+		<TextBlock x:Name="StatusText"
+                   Grid.Row="2"
+                   Text="Ready"
+                   Margin="0,12,0,0"
+                   Foreground="#555"/>
+	</Grid>
 </Window>
