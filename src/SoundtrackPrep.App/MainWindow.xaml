@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="SoundtrackPrep"
         Height="550"
-        Width="900"
+        Width="950"
         WindowStartupLocation="CenterScreen">
 
 	<Grid Margin="16">
@@ -37,12 +37,21 @@
                 Margin="0,0,0,16"
                 Click="SelectFolderButton_Click"/>
 
-		<!-- File list -->
-		<ListBox x:Name="FileList"
-                 Grid.Row="2"
-                 BorderBrush="#DDD"
-                 BorderThickness="1"
-                 FontSize="13"/>
+		<!-- File list as ListView with columns -->
+		<ListView x:Name="FileList"
+                  Grid.Row="2"
+                  BorderBrush="#DDD"
+                  BorderThickness="1"
+                  FontSize="13">
+			<ListView.View>
+				<GridView>
+					<GridViewColumn Header="Disc"   Width="60"  DisplayMemberBinding="{Binding Disc}"/>
+					<GridViewColumn Header="Track"  Width="70"  DisplayMemberBinding="{Binding Track}"/>
+					<GridViewColumn Header="Title"  Width="520" DisplayMemberBinding="{Binding Title}"/>
+					<GridViewColumn Header="Duration" Width="90" DisplayMemberBinding="{Binding Duration}"/>
+				</GridView>
+			</ListView.View>
+		</ListView>
 
 		<!-- Status bar -->
 		<TextBlock x:Name="StatusText"

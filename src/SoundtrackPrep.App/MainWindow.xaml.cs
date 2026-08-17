@@ -3,8 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using Microsoft.Win32;
+using SoundtrackPrep.App.ViewModels;
 using SoundtrackPrep.Core.Models;
 using SoundtrackPrep.Core.Services;
 
@@ -12,6 +12,7 @@ namespace SoundtrackPrep.App;
 
 public partial class MainWindow : Window
 {
+    // One shared instance of the service that knows how to read audio tags
     private readonly AudioFileService _audioService = new AudioFileService();
 
     public MainWindow()
@@ -20,11 +21,19 @@ public partial class MainWindow : Window
         StatusText.Text = "Ready";
     }
 
+    /// <summary>
+    /// Simple helper so any part of this window can update the status bar.
+    /// </summary>
     public void SetStatus(string message)
     {
         StatusText.Text = message;
     }
 
+    /// <summary>
+    /// Handles the Select Folder button.
+    /// Runs the file scanning on a background thread so the UI stays responsive,
+    /// then binds the results to the ListView.
+    /// </summary>
     private async void SelectFolderButton_Click(object sender, RoutedEventArgs e)
     {
         OpenFolderDialog dialog = new OpenFolderDialog
@@ -40,53 +49,72 @@ public partial class MainWindow : Window
 
         string folderPath = dialog.FolderName;
         SetStatus($"Scanning: {folderPath} …");
-        FileList.Items.Clear();
+
+        // Clear any previous results
+        FileList.ItemsSource = null;
         SelectFolderButton.IsEnabled = false;
 
         try
         {
-            // 1. Heavy work on background thread – only data, no UI objects
-            var results = await Task.Run(() =>
+            // -------------------------------------------------------
+            // Heavy work happens here on a background thread
+            // -------------------------------------------------------
+            List<TrackRow> rows = await Task.Run(() =>
             {
                 string[] audioExtensions = { ".flac", ".wav", ".mp3" };
 
+                // Find every audio file under the chosen folder
                 List<string> files = Directory.EnumerateFiles(folderPath, "*.*", SearchOption.AllDirectories)
                                               .Where(f => audioExtensions.Contains(Path.GetExtension(f).ToLowerInvariant()))
                                               .OrderBy(f => f)
                                               .ToList();
 
-                // Simple data structure we can safely pass back to the UI thread
-                List<(string DisplayText, string FullPath)> data = new();
+                List<TrackRow> result = new List<TrackRow>();
 
                 foreach (string file in files)
                 {
+                    // Ask our service to read the embedded tags
                     Track? track = _audioService.ReadTrack(file);
 
-                    string displayText = track == null
-                        ? $"[UNREADABLE] {Path.GetFileName(file)}"
-                        : $"Disc {track.DiscNumber} – Track {track.Number:D2}: {track.Title}";
+                    TrackRow row = new TrackRow
+                    {
+                        FullPath = file          // kept for tooltips / future use
+                    };
 
-                    data.Add((displayText, file));
+                    if (track == null)
+                    {
+                        // File could not be read – still show something useful
+                        row.Disc = 0;
+                        row.Track = "--";
+                        row.Title = $"[UNREADABLE] {Path.GetFileName(file)}";
+                        row.Duration = "";
+                    }
+                    else
+                    {
+                        // Map the domain Track into a simple row the ListView understands
+                        row.Disc = track.DiscNumber;
+                        row.Track = track.Number.ToString("D2");   // 01, 02, 03…
+                        row.Title = track.Title;
+                        row.Duration = track.Duration.HasValue
+                            ? track.Duration.Value.ToString(@"m\:ss")
+                            : "";
+                    }
+
+                    result.Add(row);
                 }
 
-                return data;
+                return result;
             });
 
-            // 2. Back on the UI thread – now it is safe to create ListBoxItems
-            foreach (var (displayText, fullPath) in results)
-            {
-                ListBoxItem item = new ListBoxItem
-                {
-                    Content = displayText,
-                    ToolTip = fullPath
-                };
-                FileList.Items.Add(item);
-            }
-
-            SetStatus($"Found {results.Count} audio file(s)");
+            // -------------------------------------------------------
+            // Back on the UI thread – safe to update the ListView
+            // -------------------------------------------------------
+            FileList.ItemsSource = rows;
+            SetStatus($"Found {rows.Count} audio file(s)");
         }
         finally
         {
+            // Always re-enable the button, success or failure
             SelectFolderButton.IsEnabled = true;
         }
     }
