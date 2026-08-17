@@ -13,13 +13,9 @@
 	<Grid Margin="16">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
-			<!-- Header -->
 			<RowDefinition Height="Auto"/>
-			<!-- Button row -->
 			<RowDefinition Height="*"/>
-			<!-- File list -->
 			<RowDefinition Height="Auto"/>
-			<!-- Status bar -->
 		</Grid.RowDefinitions>
 
 		<!-- Header -->

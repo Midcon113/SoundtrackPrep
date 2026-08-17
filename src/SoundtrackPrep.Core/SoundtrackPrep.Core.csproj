@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="z440.atl.core" Version="7.16.0" />
+  </ItemGroup>
+
 </Project>
