@@ -14,6 +14,8 @@
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
 			<!-- Header -->
+			<RowDefinition Height="Auto"/>
+			<!-- Button row -->
 			<RowDefinition Height="*"/>
 			<!-- Main content -->
 			<RowDefinition Height="Auto"/>
@@ -25,10 +27,22 @@
                    Text="SoundtrackPrep"
                    FontSize="22"
                    FontWeight="SemiBold"
-                   Margin="0,0,0,16"/>
+                   Margin="0,0,0,12"/>
 
-		<!-- Main content area (empty for now) -->
-		<Border Grid.Row="1"
+		<!-- Button row -->
+		<Button Grid.Row="1"
+				x:Name="SelectFolderButton"
+				Content="Select Folder…"
+				Width="160"
+				Height="36"
+				FontSize="14"
+				FontWeight="SemiBold"
+				HorizontalAlignment="Left"
+				Margin="0,0,0,16"
+				Click="SelectFolderButton_Click"/>
+
+		<!-- Main content area -->
+		<Border Grid.Row="2"
                 Background="#F5F5F5"
                 BorderBrush="#DDD"
                 BorderThickness="1"
@@ -41,9 +55,11 @@
 
 		<!-- Status bar -->
 		<TextBlock x:Name="StatusText"
-                   Grid.Row="2"
-                   Text="Ready"
-                   Margin="0,12,0,0"
-                   Foreground="#555"/>
+				   Grid.Row="3"
+				   Text="Ready"
+				   Margin="0,12,0,0"
+				   FontSize="14"
+				   FontWeight="SemiBold"
+				   Foreground="#222"/>
 	</Grid>
 </Window>
