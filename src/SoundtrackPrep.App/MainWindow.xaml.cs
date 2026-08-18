@@ -7,6 +7,7 @@ using Microsoft.Win32;
 using SoundtrackPrep.App.ViewModels;
 using SoundtrackPrep.Core.Models;
 using SoundtrackPrep.Core.Services;
+using System.Collections;
 
 namespace SoundtrackPrep.App;
 
@@ -27,6 +28,55 @@ public partial class MainWindow : Window
     public void SetStatus(string message)
     {
         StatusText.Text = message;
+    }
+
+    /// <summary>
+    /// Handles the checkbox in the column header.
+    /// Checks or unchecks every row at once.
+    /// </summary>
+    private void HeaderCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        if (FileList.ItemsSource is not IEnumerable<TrackRow> rows)
+            return;
+
+        bool isChecked = HeaderCheckBox.IsChecked == true;
+
+        foreach (TrackRow row in rows)
+        {
+            row.IsSelected = isChecked;
+        }
+
+        // Force the ListView to refresh the checkboxes
+        FileList.Items.Refresh();
+
+        // Update
+        UpdateSelectionStatus();
+    }
+
+    /// <summary>
+    /// Called when any individual row checkbox is clicked.
+    /// Simply refreshes the selection count in the status bar.
+    /// </summary>
+    private void RowCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        UpdateSelectionStatus();
+    }
+
+    /// <summary>
+    /// Updates the status bar to show how many tracks are selected.
+    /// </summary>
+    private void UpdateSelectionStatus()
+    {
+        if (FileList.ItemsSource is not IEnumerable<TrackRow> rows)
+        {
+            SetStatus("Ready");
+            return;
+        }
+
+        int selectedCount = rows.Count(r => r.IsSelected);
+        int totalCount = rows.Count();
+
+        SetStatus($"{selectedCount} of {totalCount} tracks selected");
     }
 
     /// <summary>
