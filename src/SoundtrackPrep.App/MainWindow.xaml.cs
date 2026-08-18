@@ -98,13 +98,14 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// Updates the status bar to show how many tracks are selected.
+    /// Updates the status bar and keeps the header checkbox in the correct state.
     /// </summary>
     private void UpdateSelectionStatus()
     {
         if (FileList.ItemsSource is not IEnumerable<TrackRow> rows)
         {
             SetStatus("Ready");
+            HeaderCheckBox.IsChecked = false;
             return;
         }
 
@@ -112,6 +113,14 @@ public partial class MainWindow : Window
         int totalCount = rows.Count();
 
         SetStatus($"{selectedCount} of {totalCount} tracks selected");
+
+        // Keep the header checkbox accurate
+        if (selectedCount == 0)
+            HeaderCheckBox.IsChecked = false;
+        else if (selectedCount == totalCount)
+            HeaderCheckBox.IsChecked = true;
+        else
+            HeaderCheckBox.IsChecked = null;   // indeterminate (square) state
     }
 
     /// <summary>
