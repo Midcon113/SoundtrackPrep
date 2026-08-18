@@ -54,6 +54,41 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
+    /// Selects every track in the list.
+    /// </summary>
+    private void SelectAllButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (FileList.ItemsSource is not IEnumerable<TrackRow> rows)
+            return;
+
+        foreach (TrackRow row in rows)
+        {
+            row.IsSelected = true;
+        }
+
+        // Tell the ListView to redraw the checkboxes
+        FileList.Items.Refresh();
+        UpdateSelectionStatus();
+    }
+
+    /// <summary>
+    /// Clears the selection on every track.
+    /// </summary>
+    private void SelectNoneButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (FileList.ItemsSource is not IEnumerable<TrackRow> rows)
+            return;
+
+        foreach (TrackRow row in rows)
+        {
+            row.IsSelected = false;
+        }
+
+        FileList.Items.Refresh();
+        UpdateSelectionStatus();
+    }
+
+    /// <summary>
     /// Called when any individual row checkbox is clicked.
     /// Simply refreshes the selection count in the status bar.
     /// </summary>
