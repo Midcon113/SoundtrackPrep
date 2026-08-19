@@ -25,65 +25,119 @@
                    FontWeight="SemiBold"
                    Margin="0,0,0,12"/>
 
-		<!-- Button row -->
-		<StackPanel Grid.Row="1"
-					Orientation="Horizontal"
-					Margin="0,0,0,16">
+<!-- Button + tools row -->
+<StackPanel Grid.Row="1" Margin="0,0,0,16">
+    
+    <!-- First line: main actions -->
+    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+        <Button x:Name="SelectFolderButton"
+                Content="Select Folder…"
+                Width="160" Height="36"
+                FontSize="14" FontWeight="SemiBold"
+                Margin="0,0,12,0"
+                Click="SelectFolderButton_Click"/>
 
-			<Button x:Name="SelectFolderButton"
-					Content="Select Folder…"
-					Width="160"
-					Height="36"
-					FontSize="14"
-					FontWeight="SemiBold"
-					Margin="0,0,12,0"
-					Click="SelectFolderButton_Click"/>
+        <Button Content="Select All"
+                Width="100" Height="36" FontSize="14"
+                Margin="0,0,8,0"
+                Click="SelectAllButton_Click"/>
 
-			<Button Content="Select All"
-					Width="100"
-					Height="36"
-					FontSize="14"
-					Margin="0,0,8,0"
-					Click="SelectAllButton_Click"/>
+        <Button Content="Select None"
+                Width="110" Height="36" FontSize="14"
+                Click="SelectNoneButton_Click"/>
+    </StackPanel>
 
-			<Button Content="Select None"
-					Width="110"
-					Height="36"
-					FontSize="14"
-					Click="SelectNoneButton_Click"/>
-		</StackPanel>
+    <!-- Second line: Disc Number tool -->
+    <StackPanel Orientation="Horizontal">
+        <TextBlock Text="Set Disc Number:"
+                   VerticalAlignment="Center"
+                   Margin="0,0,8,0"
+                   FontSize="14"/>
 
-		<!-- File list as ListView with columns -->
-		<ListView x:Name="FileList"
-				  Grid.Row="2"
-				  BorderBrush="#DDD"
-				  BorderThickness="1"
-				  FontSize="13">
-			<ListView.View>
-				<GridView>
-					<!-- Checkbox column -->
-					<GridViewColumn Width="40">
-						<GridViewColumn.Header>
-							<CheckBox x:Name="HeaderCheckBox"
-									  HorizontalAlignment="Center"
-									  Click="HeaderCheckBox_Click"/>
-						</GridViewColumn.Header>
-						<GridViewColumn.CellTemplate>
-							<DataTemplate>
-								<CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
-										  HorizontalAlignment="Center"
-										  Click="RowCheckBox_Click"/>
-							</DataTemplate>
-						</GridViewColumn.CellTemplate>
-					</GridViewColumn>
+        <TextBox x:Name="DiscNumberTextBox"
+                 Width="50" Height="32"
+                 FontSize="14"
+                 VerticalContentAlignment="Center"
+                 Text="1"
+                 Margin="0,0,8,0"/>
 
-					<GridViewColumn Header="Disc"     Width="60"  DisplayMemberBinding="{Binding Disc}"/>
-					<GridViewColumn Header="Track"    Width="70"  DisplayMemberBinding="{Binding Track}"/>
-					<GridViewColumn Header="Title"    Width="480" DisplayMemberBinding="{Binding Title}"/>
-					<GridViewColumn Header="Duration" Width="90"  DisplayMemberBinding="{Binding Duration}"/>
-				</GridView>
-			</ListView.View>
-		</ListView>
+        <Button Content="Apply to Selected"
+                Height="32" FontSize="14"
+                Padding="12,0"
+                Click="ApplyDiscNumber_Click"/>
+    </StackPanel>
+</StackPanel>
+
+<!-- File list as ListView with columns -->
+<ListView x:Name="FileList"
+          Grid.Row="2"
+          BorderBrush="#DDD"
+          BorderThickness="1"
+          FontSize="13">
+    <ListView.View>
+        <GridView>
+            <!-- Checkbox column -->
+            <GridViewColumn Width="40">
+                <GridViewColumn.Header>
+                    <CheckBox x:Name="HeaderCheckBox"
+                              HorizontalAlignment="Center"
+                              Click="HeaderCheckBox_Click"/>
+                </GridViewColumn.Header>
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                  HorizontalAlignment="Center"
+                                  Click="RowCheckBox_Click"/>
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+            </GridViewColumn>
+
+            <GridViewColumn Width="60">
+                <GridViewColumn.Header>
+                    <GridViewColumnHeader Content="Disc" Click="Sort_Click" Tag="Disc"/>
+                </GridViewColumn.Header>
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Disc}"/>
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+            </GridViewColumn>
+
+            <GridViewColumn Width="70">
+                <GridViewColumn.Header>
+                    <GridViewColumnHeader Content="Track" Click="Sort_Click" Tag="Track"/>
+                </GridViewColumn.Header>
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Track}"/>
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+            </GridViewColumn>
+
+            <GridViewColumn Width="480">
+                <GridViewColumn.Header>
+                    <GridViewColumnHeader Content="Title" Click="Sort_Click" Tag="Title"/>
+                </GridViewColumn.Header>
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Title}"/>
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+            </GridViewColumn>
+
+            <GridViewColumn Width="90">
+                <GridViewColumn.Header>
+                    <GridViewColumnHeader Content="Duration" Click="Sort_Click" Tag="Duration"/>
+                </GridViewColumn.Header>
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Duration}"/>
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+            </GridViewColumn>
+        </GridView>
+    </ListView.View>
+</ListView>
 
 		<!-- Status bar -->
 		<TextBlock x:Name="StatusText"

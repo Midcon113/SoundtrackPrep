@@ -42,4 +42,33 @@ public class AudioFileService
             return null;
         }
     }
+
+    /// <summary>
+    /// Writes a new Disc Number into the actual audio file on disk.
+    /// This permanently changes the file.
+    /// Returns true if the write succeeded, false if anything went wrong.
+    /// </summary>
+    public bool SetDiscNumber(string filePath, int discNumber)
+    {
+        try
+        {
+            // Open the audio file with ATL so we can read and write its tags
+            ATL.Track atlTrack = new ATL.Track(filePath);
+
+            // Update the Disc Number tag in memory
+            atlTrack.DiscNumber = discNumber;
+
+            // Save() writes the change back to the physical file.
+            // It returns true on success, false on failure.
+            bool success = atlTrack.Save();
+
+            return success;
+        }
+        catch
+        {
+            // Any exception (file locked, permission issue, unsupported format, etc.)
+            // is treated as a failure for now. Later we can surface better error messages.
+            return false;
+        }
+    }
 }

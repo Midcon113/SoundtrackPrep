@@ -8,11 +8,17 @@ using SoundtrackPrep.App.ViewModels;
 using SoundtrackPrep.Core.Models;
 using SoundtrackPrep.Core.Services;
 using System.Collections;
+using System.Windows.Controls;
 
 namespace SoundtrackPrep.App;
 
 public partial class MainWindow : Window
 {
+
+    // Remembers which column we last sorted by and in which direction
+    private string _lastSortColumn = "";
+    private bool _sortAscending = true;
+    
     // One shared instance of the service that knows how to read audio tags
     private readonly AudioFileService _audioService = new AudioFileService();
 
@@ -52,6 +58,68 @@ public partial class MainWindow : Window
         // Update
         UpdateSelectionStatus();
     }
+
+    /// <summary>
+/// Called when the user clicks any column header.
+/// Sorts the list by that column. Clicking the same column again reverses the direction.
+/// </summary>
+private void Sort_Click(object sender, RoutedEventArgs e)
+{
+    // The header that was clicked tells us which property to sort by via its Tag
+    if (sender is not GridViewColumnHeader header || header.Tag is not string columnName)
+        return;
+
+    if (FileList.ItemsSource is not IEnumerable<TrackRow> rows)
+        return;
+
+    // If the user clicked the same column as last time, reverse the sort direction
+    if (columnName == _lastSortColumn)
+    {
+        _sortAscending = !_sortAscending;
+    }
+    else
+    {
+        _lastSortColumn = columnName;
+        _sortAscending = true;          // new column → start with ascending
+    }
+
+    // Perform the actual sort
+    List<TrackRow> sorted;
+
+    switch (columnName)
+    {
+        case "Disc":
+            sorted = _sortAscending
+                ? rows.OrderBy(r => r.Disc).ToList()
+                : rows.OrderByDescending(r => r.Disc).ToList();
+            break;
+
+        case "Track":
+            sorted = _sortAscending
+                ? rows.OrderBy(r => r.Track).ToList()
+                : rows.OrderByDescending(r => r.Track).ToList();
+            break;
+
+        case "Title":
+            sorted = _sortAscending
+                ? rows.OrderBy(r => r.Title).ToList()
+                : rows.OrderByDescending(r => r.Title).ToList();
+            break;
+
+        case "Duration":
+            sorted = _sortAscending
+                ? rows.OrderBy(r => r.Duration).ToList()
+                : rows.OrderByDescending(r => r.Duration).ToList();
+            break;
+
+        default:
+            return;
+    }
+
+    // Put the sorted list back into the ListView
+    FileList.ItemsSource = sorted;
+    UpdateSelectionStatus();
+}
 
     /// <summary>
     /// Selects every track in the list.
@@ -121,6 +189,56 @@ public partial class MainWindow : Window
             HeaderCheckBox.IsChecked = true;
         else
             HeaderCheckBox.IsChecked = null;   // indeterminate (square) state
+    }
+
+    /// <summary>
+    /// Applies the disc number from the text box to every currently selected track
+    /// and writes the change permanently into the audio files.
+    /// </summary>
+    private void ApplyDiscNumber_Click(object sender, RoutedEventArgs e)
+    {
+        // Validate the number the user typed
+        if (!int.TryParse(DiscNumberTextBox.Text, out int newDiscNumber) || newDiscNumber < 1)
+        {
+            SetStatus("Please enter a valid disc number (1 or higher)");
+            return;
+        }
+
+        if (FileList.ItemsSource is not IEnumerable<TrackRow> rows)
+            return;
+
+        int successCount = 0;
+        int failCount = 0;
+
+        foreach (TrackRow row in rows)
+        {
+            if (!row.IsSelected)
+                continue;
+
+            // Try to write the new disc number into the real file
+            bool written = _audioService.SetDiscNumber(row.FullPath, newDiscNumber);
+
+            if (written)
+            {
+                // Update the on-screen value so the user sees the change immediately
+                row.Disc = newDiscNumber;
+                successCount++;
+            }
+            else
+            {
+                failCount++;
+            }
+        }
+
+        // Refresh the list so the new values appear
+        FileList.Items.Refresh();
+        UpdateSelectionStatus();
+
+        // Clear feedback for the user
+        if (failCount == 0)
+            SetStatus($"Successfully updated disc number on {successCount} track(s)");
+        else
+            SetStatus($"Updated {successCount} track(s), {failCount} failed");
     }
 
     /// <summary>
