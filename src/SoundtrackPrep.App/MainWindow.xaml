@@ -6,146 +6,130 @@
         xmlns:local="clr-namespace:SoundtrackPrep.App"
         mc:Ignorable="d"
         Title="SoundtrackPrep"
-        Height="550"
-        Width="950"
+        Height="600"
+        Width="1000"
         WindowStartupLocation="CenterScreen">
 
-	<Grid Margin="16">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="*"/>
-			<RowDefinition Height="Auto"/>
-		</Grid.RowDefinitions>
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-		<!-- Header -->
-		<TextBlock Grid.Row="0"
+        <!-- Header -->
+        <TextBlock Grid.Row="0"
                    Text="SoundtrackPrep"
                    FontSize="22"
                    FontWeight="SemiBold"
                    Margin="0,0,0,12"/>
 
-<!-- Button + tools row -->
-<StackPanel Grid.Row="1" Margin="0,0,0,16">
-    
-    <!-- First line: main actions -->
-    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-        <Button x:Name="SelectFolderButton"
-                Content="Select Folder…"
-                Width="160" Height="36"
-                FontSize="14" FontWeight="SemiBold"
-                Margin="0,0,12,0"
-                Click="SelectFolderButton_Click"/>
+        <!-- Buttons + Tools -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,16">
 
-        <Button Content="Select All"
-                Width="100" Height="36" FontSize="14"
-                Margin="0,0,8,0"
-                Click="SelectAllButton_Click"/>
+            <!-- Main action buttons -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                <Button x:Name="SelectFolderButton"
+                        Content="Select Folder…"
+                        Width="160" Height="36"
+                        FontSize="14" FontWeight="SemiBold"
+                        Margin="0,0,12,0"
+                        Click="SelectFolderButton_Click"/>
 
-        <Button Content="Select None"
-                Width="110" Height="36" FontSize="14"
-                Click="SelectNoneButton_Click"/>
-    </StackPanel>
+                <Button Content="Select All"
+                        Width="100" Height="36" FontSize="14"
+                        Margin="0,0,8,0"
+                        Click="SelectAllButton_Click"/>
 
-    <!-- Second line: Disc Number tool -->
-    <StackPanel Orientation="Horizontal">
-        <TextBlock Text="Set Disc Number:"
-                   VerticalAlignment="Center"
-                   Margin="0,0,8,0"
-                   FontSize="14"/>
+                <Button Content="Select None"
+                        Width="110" Height="36" FontSize="14"
+                        Click="SelectNoneButton_Click"/>
+            </StackPanel>
 
-        <TextBox x:Name="DiscNumberTextBox"
-                 Width="50" Height="32"
-                 FontSize="14"
-                 VerticalContentAlignment="Center"
-                 Text="1"
-                 Margin="0,0,8,0"/>
+            <!-- Tag editing tools -->
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Set Disc:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="14"/>
+                <TextBox x:Name="DiscNumberTextBox" Width="50" Height="30" FontSize="14"
+                         VerticalContentAlignment="Center" Text="1" Margin="0,0,6,0"/>
+                <Button Content="Apply Disc" Height="30" FontSize="13" Padding="10,0"
+                        Margin="0,0,20,0" Click="ApplyDiscNumber_Click"/>
 
-        <Button Content="Apply to Selected"
-                Height="32" FontSize="14"
-                Padding="12,0"
-                Click="ApplyDiscNumber_Click"/>
-    </StackPanel>
-</StackPanel>
+                <TextBlock Text="Set Track:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="14"/>
+                <TextBox x:Name="TrackNumberTextBox" Width="50" Height="30" FontSize="14"
+                         VerticalContentAlignment="Center" Text="1" Margin="0,0,6,0"/>
+                <Button Content="Apply Track" Height="30" FontSize="13" Padding="10,0"
+                        Click="ApplyTrackNumber_Click"/>
+            </StackPanel>
+        </StackPanel>
 
-<!-- File list as ListView with columns -->
-<ListView x:Name="FileList"
-          Grid.Row="2"
-          BorderBrush="#DDD"
-          BorderThickness="1"
-          FontSize="13">
-    <ListView.View>
-        <GridView>
-            <!-- Checkbox column -->
-            <GridViewColumn Width="40">
-                <GridViewColumn.Header>
-                    <CheckBox x:Name="HeaderCheckBox"
-                              HorizontalAlignment="Center"
-                              Click="HeaderCheckBox_Click"/>
-                </GridViewColumn.Header>
-                <GridViewColumn.CellTemplate>
-                    <DataTemplate>
-                        <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                  HorizontalAlignment="Center"
-                                  Click="RowCheckBox_Click"/>
-                    </DataTemplate>
-                </GridViewColumn.CellTemplate>
-            </GridViewColumn>
+        <!-- Track list -->
+        <ListView x:Name="FileList" Grid.Row="2"
+                  BorderBrush="#DDD" BorderThickness="1" FontSize="13">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Width="40">
+                        <GridViewColumn.Header>
+                            <CheckBox x:Name="HeaderCheckBox" HorizontalAlignment="Center" Click="HeaderCheckBox_Click"/>
+                        </GridViewColumn.Header>
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                          HorizontalAlignment="Center" Click="RowCheckBox_Click"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
 
-            <GridViewColumn Width="60">
-                <GridViewColumn.Header>
-                    <GridViewColumnHeader Content="Disc" Click="Sort_Click" Tag="Disc"/>
-                </GridViewColumn.Header>
-                <GridViewColumn.CellTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Disc}"/>
-                    </DataTemplate>
-                </GridViewColumn.CellTemplate>
-            </GridViewColumn>
+                    <GridViewColumn Width="60">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader Content="Disc" Click="Sort_Click" Tag="Disc"/>
+                        </GridViewColumn.Header>
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Disc}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
 
-            <GridViewColumn Width="70">
-                <GridViewColumn.Header>
-                    <GridViewColumnHeader Content="Track" Click="Sort_Click" Tag="Track"/>
-                </GridViewColumn.Header>
-                <GridViewColumn.CellTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Track}"/>
-                    </DataTemplate>
-                </GridViewColumn.CellTemplate>
-            </GridViewColumn>
+                    <GridViewColumn Width="70">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader Content="Track" Click="Sort_Click" Tag="Track"/>
+                        </GridViewColumn.Header>
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Track}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
 
-            <GridViewColumn Width="480">
-                <GridViewColumn.Header>
-                    <GridViewColumnHeader Content="Title" Click="Sort_Click" Tag="Title"/>
-                </GridViewColumn.Header>
-                <GridViewColumn.CellTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Title}"/>
-                    </DataTemplate>
-                </GridViewColumn.CellTemplate>
-            </GridViewColumn>
+                    <GridViewColumn Width="520">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader Content="Title" Click="Sort_Click" Tag="Title"/>
+                        </GridViewColumn.Header>
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Title}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
 
-            <GridViewColumn Width="90">
-                <GridViewColumn.Header>
-                    <GridViewColumnHeader Content="Duration" Click="Sort_Click" Tag="Duration"/>
-                </GridViewColumn.Header>
-                <GridViewColumn.CellTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Duration}"/>
-                    </DataTemplate>
-                </GridViewColumn.CellTemplate>
-            </GridViewColumn>
-        </GridView>
-    </ListView.View>
-</ListView>
+                    <GridViewColumn Width="90">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader Content="Duration" Click="Sort_Click" Tag="Duration"/>
+                        </GridViewColumn.Header>
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Duration}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
 
-		<!-- Status bar -->
-		<TextBlock x:Name="StatusText"
-                   Grid.Row="3"
-                   Text="Ready"
-                   Margin="0,12,0,0"
-                   FontSize="14"
-                   FontWeight="SemiBold"
-                   Foreground="#222"/>
-	</Grid>
+        <!-- Status bar -->
+        <TextBlock x:Name="StatusText" Grid.Row="3"
+                   Text="Ready" Margin="0,12,0,0"
+                   FontSize="14" FontWeight="SemiBold" Foreground="#222"/>
+    </Grid>
 </Window>

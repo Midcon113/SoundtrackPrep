@@ -71,4 +71,25 @@ public class AudioFileService
             return false;
         }
     }
+    /// <summary>
+    /// Writes a new Track Number into the actual audio file on disk.
+    /// Returns true if the write succeeded, false if it failed.
+    /// </summary>
+    public bool SetTrackNumber(string filePath, int trackNumber)
+    {
+        try
+        {
+            ATL.Track atlTrack = new ATL.Track(filePath);
+
+            // Update the Track Number tag
+            atlTrack.TrackNumber = trackNumber;
+
+            // Save the change permanently to the file
+            return atlTrack.Save();
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

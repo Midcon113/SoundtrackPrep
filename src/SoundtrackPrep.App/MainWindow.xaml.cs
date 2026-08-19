@@ -1,32 +1,49 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using Microsoft.Win32;
 using SoundtrackPrep.App.ViewModels;
 using SoundtrackPrep.Core.Models;
 using SoundtrackPrep.Core.Services;
-using System.Collections;
-using System.Windows.Controls;
 
 namespace SoundtrackPrep.App;
 
+/// <summary>
+/// The main window of SoundtrackPrep.
+/// This is where the user interacts with the application.
+/// </summary>
 public partial class MainWindow : Window
 {
+    // -------------------------------------------------------
+    // Fields
+    // -------------------------------------------------------
 
-    // Remembers which column we last sorted by and in which direction
+    // Remembers which column we last sorted by and whether it was ascending or descending.
+    // This lets us reverse the sort when the user clicks the same header again.
     private string _lastSortColumn = "";
     private bool _sortAscending = true;
-    
-    // One shared instance of the service that knows how to read audio tags
+
+    // One shared instance of the service that knows how to read and write audio tags.
+    // We create it once and reuse it for the lifetime of the window.
     private readonly AudioFileService _audioService = new AudioFileService();
+
+    // -------------------------------------------------------
+    // Constructor
+    // -------------------------------------------------------
 
     public MainWindow()
     {
         InitializeComponent();
         StatusText.Text = "Ready";
     }
+
+    // -------------------------------------------------------
+    // Status helpers
+    // -------------------------------------------------------
 
     /// <summary>
     /// Simple helper so any part of this window can update the status bar.
@@ -37,136 +54,9 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// Handles the checkbox in the column header.
-    /// Checks or unchecks every row at once.
-    /// </summary>
-    private void HeaderCheckBox_Click(object sender, RoutedEventArgs e)
-    {
-        if (FileList.ItemsSource is not IEnumerable<TrackRow> rows)
-            return;
-
-        bool isChecked = HeaderCheckBox.IsChecked == true;
-
-        foreach (TrackRow row in rows)
-        {
-            row.IsSelected = isChecked;
-        }
-
-        // Force the ListView to refresh the checkboxes
-        FileList.Items.Refresh();
-
-        // Update
-        UpdateSelectionStatus();
-    }
-
-    /// <summary>
-/// Called when the user clicks any column header.
-/// Sorts the list by that column. Clicking the same column again reverses the direction.
-/// </summary>
-private void Sort_Click(object sender, RoutedEventArgs e)
-{
-    // The header that was clicked tells us which property to sort by via its Tag
-    if (sender is not GridViewColumnHeader header || header.Tag is not string columnName)
-        return;
-
-    if (FileList.ItemsSource is not IEnumerable<TrackRow> rows)
-        return;
-
-    // If the user clicked the same column as last time, reverse the sort direction
-    if (columnName == _lastSortColumn)
-    {
-        _sortAscending = !_sortAscending;
-    }
-    else
-    {
-        _lastSortColumn = columnName;
-        _sortAscending = true;          // new column → start with ascending
-    }
-
-    // Perform the actual sort
-    List<TrackRow> sorted;
-
-    switch (columnName)
-    {
-        case "Disc":
-            sorted = _sortAscending
-                ? rows.OrderBy(r => r.Disc).ToList()
-                : rows.OrderByDescending(r => r.Disc).ToList();
-            break;
-
-        case "Track":
-            sorted = _sortAscending
-                ? rows.OrderBy(r => r.Track).ToList()
-                : rows.OrderByDescending(r => r.Track).ToList();
-            break;
-
-        case "Title":
-            sorted = _sortAscending
-                ? rows.OrderBy(r => r.Title).ToList()
-                : rows.OrderByDescending(r => r.Title).ToList();
-            break;
-
-        case "Duration":
-            sorted = _sortAscending
-                ? rows.OrderBy(r => r.Duration).ToList()
-                : rows.OrderByDescending(r => r.Duration).ToList();
-            break;
-
-        default:
-            return;
-    }
-
-    // Put the sorted list back into the ListView
-    FileList.ItemsSource = sorted;
-    UpdateSelectionStatus();
-}
-
-    /// <summary>
-    /// Selects every track in the list.
-    /// </summary>
-    private void SelectAllButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (FileList.ItemsSource is not IEnumerable<TrackRow> rows)
-            return;
-
-        foreach (TrackRow row in rows)
-        {
-            row.IsSelected = true;
-        }
-
-        // Tell the ListView to redraw the checkboxes
-        FileList.Items.Refresh();
-        UpdateSelectionStatus();
-    }
-
-    /// <summary>
-    /// Clears the selection on every track.
-    /// </summary>
-    private void SelectNoneButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (FileList.ItemsSource is not IEnumerable<TrackRow> rows)
-            return;
-
-        foreach (TrackRow row in rows)
-        {
-            row.IsSelected = false;
-        }
-
-        FileList.Items.Refresh();
-        UpdateSelectionStatus();
-    }
-
-    /// <summary>
-    /// Called when any individual row checkbox is clicked.
-    /// Simply refreshes the selection count in the status bar.
-    /// </summary>
-    private void RowCheckBox_Click(object sender, RoutedEventArgs e)
-    {
-        UpdateSelectionStatus();
-    }
-
-    /// <summary>
-    /// Updates the status bar and keeps the header checkbox in the correct state.
+    /// Updates the status bar with how many tracks are selected
+    /// and keeps the header checkbox in the correct visual state
+    /// (checked / unchecked / indeterminate).
     /// </summary>
     private void UpdateSelectionStatus()
     {
@@ -182,18 +72,83 @@ private void Sort_Click(object sender, RoutedEventArgs e)
 
         SetStatus($"{selectedCount} of {totalCount} tracks selected");
 
-        // Keep the header checkbox accurate
+        // Keep the header checkbox honest
         if (selectedCount == 0)
             HeaderCheckBox.IsChecked = false;
         else if (selectedCount == totalCount)
             HeaderCheckBox.IsChecked = true;
         else
-            HeaderCheckBox.IsChecked = null;   // indeterminate (square) state
+            HeaderCheckBox.IsChecked = null; // indeterminate (square) state
+    }
+
+    // -------------------------------------------------------
+    // Selection handlers
+    // -------------------------------------------------------
+
+    /// <summary>
+    /// Handles the checkbox in the column header.
+    /// Checks or unchecks every row at once.
+    /// </summary>
+    private void HeaderCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        if (FileList.ItemsSource is not IEnumerable<TrackRow> rows)
+            return;
+
+        bool isChecked = HeaderCheckBox.IsChecked == true;
+
+        foreach (TrackRow row in rows)
+            row.IsSelected = isChecked;
+
+        FileList.Items.Refresh();
+        UpdateSelectionStatus();
     }
 
     /// <summary>
+    /// Called when any individual row checkbox is clicked.
+    /// We only need to refresh the selection count.
+    /// </summary>
+    private void RowCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        UpdateSelectionStatus();
+    }
+
+    /// <summary>
+    /// Selects every track in the list.
+    /// </summary>
+    private void SelectAllButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (FileList.ItemsSource is not IEnumerable<TrackRow> rows)
+            return;
+
+        foreach (TrackRow row in rows)
+            row.IsSelected = true;
+
+        FileList.Items.Refresh();
+        UpdateSelectionStatus();
+    }
+
+    /// <summary>
+    /// Clears the selection on every track.
+    /// </summary>
+    private void SelectNoneButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (FileList.ItemsSource is not IEnumerable<TrackRow> rows)
+            return;
+
+        foreach (TrackRow row in rows)
+            row.IsSelected = false;
+
+        FileList.Items.Refresh();
+        UpdateSelectionStatus();
+    }
+
+    // -------------------------------------------------------
+    // Tag writing handlers (the real power of the tool)
+    // -------------------------------------------------------
+
+    /// <summary>
     /// Applies the disc number from the text box to every currently selected track
-    /// and writes the change permanently into the audio files.
+    /// and writes the change permanently into the audio files on disk.
     /// </summary>
     private void ApplyDiscNumber_Click(object sender, RoutedEventArgs e)
     {
@@ -215,12 +170,12 @@ private void Sort_Click(object sender, RoutedEventArgs e)
             if (!row.IsSelected)
                 continue;
 
-            // Try to write the new disc number into the real file
+            // Ask the service to write the new disc number into the real file
             bool written = _audioService.SetDiscNumber(row.FullPath, newDiscNumber);
 
             if (written)
             {
-                // Update the on-screen value so the user sees the change immediately
+                // Update the value the user sees on screen immediately
                 row.Disc = newDiscNumber;
                 successCount++;
             }
@@ -230,11 +185,9 @@ private void Sort_Click(object sender, RoutedEventArgs e)
             }
         }
 
-        // Refresh the list so the new values appear
         FileList.Items.Refresh();
         UpdateSelectionStatus();
 
-        // Clear feedback for the user
         if (failCount == 0)
             SetStatus($"Successfully updated disc number on {successCount} track(s)");
         else
@@ -242,9 +195,97 @@ private void Sort_Click(object sender, RoutedEventArgs e)
     }
 
     /// <summary>
+    /// Applies the track number from the text box to every currently selected track
+    /// and writes the change permanently into the audio files on disk.
+    /// </summary>
+    private void ApplyTrackNumber_Click(object sender, RoutedEventArgs e)
+    {
+        if (!int.TryParse(TrackNumberTextBox.Text, out int newTrackNumber) || newTrackNumber < 1)
+        {
+            SetStatus("Please enter a valid track number (1 or higher)");
+            return;
+        }
+
+        if (FileList.ItemsSource is not IEnumerable<TrackRow> rows)
+            return;
+
+        int successCount = 0;
+        int failCount = 0;
+
+        foreach (TrackRow row in rows)
+        {
+            if (!row.IsSelected)
+                continue;
+
+            bool written = _audioService.SetTrackNumber(row.FullPath, newTrackNumber);
+
+            if (written)
+            {
+                row.Track = newTrackNumber.ToString("D2");
+                successCount++;
+            }
+            else
+            {
+                failCount++;
+            }
+        }
+
+        FileList.Items.Refresh();
+        UpdateSelectionStatus();
+
+        if (failCount == 0)
+            SetStatus($"Successfully updated track number on {successCount} track(s)");
+        else
+            SetStatus($"Updated {successCount} track(s), {failCount} failed");
+    }
+
+    // -------------------------------------------------------
+    // Sorting
+    // -------------------------------------------------------
+
+    /// <summary>
+    /// Called when the user clicks any column header.
+    /// Sorts the list by that column. Clicking the same column again reverses the direction.
+    /// </summary>
+    private void Sort_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not GridViewColumnHeader header || header.Tag is not string columnName)
+            return;
+
+        if (FileList.ItemsSource is not IEnumerable<TrackRow> rows)
+            return;
+
+        // Toggle direction if the user clicked the same column again
+        if (columnName == _lastSortColumn)
+            _sortAscending = !_sortAscending;
+        else
+        {
+            _lastSortColumn = columnName;
+            _sortAscending = true;
+        }
+
+        // Perform the sort
+        List<TrackRow> sorted = columnName switch
+        {
+            "Disc" => _sortAscending ? rows.OrderBy(r => r.Disc).ToList() : rows.OrderByDescending(r => r.Disc).ToList(),
+            "Track" => _sortAscending ? rows.OrderBy(r => r.Track).ToList() : rows.OrderByDescending(r => r.Track).ToList(),
+            "Title" => _sortAscending ? rows.OrderBy(r => r.Title).ToList() : rows.OrderByDescending(r => r.Title).ToList(),
+            "Duration" => _sortAscending ? rows.OrderBy(r => r.Duration).ToList() : rows.OrderByDescending(r => r.Duration).ToList(),
+            _ => rows.ToList()
+        };
+
+        FileList.ItemsSource = sorted;
+        UpdateSelectionStatus();
+    }
+
+    // -------------------------------------------------------
+    // Folder scanning
+    // -------------------------------------------------------
+
+    /// <summary>
     /// Handles the Select Folder button.
-    /// Runs the file scanning on a background thread so the UI stays responsive,
-    /// then binds the results to the ListView.
+    /// Runs the heavy file scanning and tag reading on a background thread
+    /// so the UI stays responsive, then shows the results in the ListView.
     /// </summary>
     private async void SelectFolderButton_Click(object sender, RoutedEventArgs e)
     {
@@ -261,21 +302,16 @@ private void Sort_Click(object sender, RoutedEventArgs e)
 
         string folderPath = dialog.FolderName;
         SetStatus($"Scanning: {folderPath} …");
-
-        // Clear any previous results
         FileList.ItemsSource = null;
         SelectFolderButton.IsEnabled = false;
 
         try
         {
-            // -------------------------------------------------------
-            // Heavy work happens here on a background thread
-            // -------------------------------------------------------
+            // Heavy work runs on a background thread
             List<TrackRow> rows = await Task.Run(() =>
             {
                 string[] audioExtensions = { ".flac", ".wav", ".mp3" };
 
-                // Find every audio file under the chosen folder
                 List<string> files = Directory.EnumerateFiles(folderPath, "*.*", SearchOption.AllDirectories)
                                               .Where(f => audioExtensions.Contains(Path.GetExtension(f).ToLowerInvariant()))
                                               .OrderBy(f => f)
@@ -285,17 +321,15 @@ private void Sort_Click(object sender, RoutedEventArgs e)
 
                 foreach (string file in files)
                 {
-                    // Ask our service to read the embedded tags
                     Track? track = _audioService.ReadTrack(file);
 
                     TrackRow row = new TrackRow
                     {
-                        FullPath = file          // kept for tooltips / future use
+                        FullPath = file
                     };
 
                     if (track == null)
                     {
-                        // File could not be read – still show something useful
                         row.Disc = 0;
                         row.Track = "--";
                         row.Title = $"[UNREADABLE] {Path.GetFileName(file)}";
@@ -303,9 +337,8 @@ private void Sort_Click(object sender, RoutedEventArgs e)
                     }
                     else
                     {
-                        // Map the domain Track into a simple row the ListView understands
                         row.Disc = track.DiscNumber;
-                        row.Track = track.Number.ToString("D2");   // 01, 02, 03…
+                        row.Track = track.Number.ToString("D2");
                         row.Title = track.Title;
                         row.Duration = track.Duration.HasValue
                             ? track.Duration.Value.ToString(@"m\:ss")
@@ -318,15 +351,13 @@ private void Sort_Click(object sender, RoutedEventArgs e)
                 return result;
             });
 
-            // -------------------------------------------------------
             // Back on the UI thread – safe to update the ListView
-            // -------------------------------------------------------
             FileList.ItemsSource = rows;
             SetStatus($"Found {rows.Count} audio file(s)");
         }
         finally
         {
-            // Always re-enable the button, success or failure
+            // Always re-enable the button
             SelectFolderButton.IsEnabled = true;
         }
     }
