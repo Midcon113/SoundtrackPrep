@@ -362,7 +362,10 @@ public partial class MainWindow : Window
                 return result;
             });
 
-            FileList.ItemsSource = rows;
+            // Default sort by Track number when a folder is loaded
+            FileList.ItemsSource = rows.OrderBy(r => r.Disc).ThenBy(r => r.Track).ToList();
+            _lastSortColumn = "Track";
+            _sortAscending = true;
             SetStatus($"Found {rows.Count} audio file(s)");
         }
         finally
