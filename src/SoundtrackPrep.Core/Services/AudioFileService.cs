@@ -92,4 +92,22 @@ public class AudioFileService
             return false;
         }
     }
+
+    /// <summary>
+    /// Writes a new Title into the actual audio file on disk.
+    /// Returns true if the write succeeded, false if it failed.
+    /// </summary>
+    public bool SetTitle(string filePath, string title)
+    {
+        try
+        {
+            ATL.Track atlTrack = new ATL.Track(filePath);
+            atlTrack.Title = title;
+            return atlTrack.Save();
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }

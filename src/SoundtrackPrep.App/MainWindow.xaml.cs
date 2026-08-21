@@ -239,6 +239,77 @@ public partial class MainWindow : Window
             SetStatus($"Updated {successCount} track(s), {failCount} failed");
     }
 
+    /// <summary>
+    /// Called when the user clicks a row in the list.
+    /// Copies that row’s Disc, Track, and Title into the text boxes
+    /// so they are ready to edit.
+    /// </summary>
+    private void FileList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (FileList.SelectedItem is not TrackRow row)
+            return;
+
+        DiscNumberTextBox.Text = row.Disc.ToString();
+        TrackNumberTextBox.Text = row.Track;
+        TitleTextBox.Text = row.Title;
+    }
+
+    /// <summary>
+    /// Applies the title from the text box to every currently selected track
+    /// and writes the change permanently into the audio files.
+    /// </summary>
+    private void ApplyTitle_Click(object sender, RoutedEventArgs e)
+    {
+        string newTitle = TitleTextBox.Text.Trim();
+
+        if (string.IsNullOrWhiteSpace(newTitle))
+        {
+            SetStatus("Please enter a title");
+            return;
+        }
+
+        if (FileList.ItemsSource is not IEnumerable<TrackRow> rows)
+        {
+            SetStatus("No tracks loaded");
+            return;
+        }
+
+        int successCount = 0;
+        int failCount = 0;
+
+        foreach (TrackRow row in rows)
+        {
+            if (!row.IsSelected)
+                continue;
+
+            try
+            {
+                bool written = _audioService.SetTitle(row.FullPath, newTitle);
+
+                if (written)
+                {
+                    row.Title = newTitle;
+                    successCount++;
+                }
+                else
+                {
+                    failCount++;
+                }
+            }
+            catch
+            {
+                failCount++;
+            }
+        }
+
+        FileList.Items.Refresh();
+        UpdateSelectionStatus();
+
+        if (failCount == 0)
+            SetStatus($"Successfully updated title on {successCount} track(s)");
+        else
+            SetStatus($"Updated {successCount} track(s), {failCount} failed");
+    }
     // -------------------------------------------------------
     // Sorting
     // -------------------------------------------------------
