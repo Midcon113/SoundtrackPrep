@@ -49,36 +49,29 @@
 
             <!-- Tag editing tools -->
             <StackPanel Orientation="Horizontal">
-                <!-- Disc -->
-                <TextBlock Text="Set Disc:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="14"/>
+                <TextBlock Text="Disc:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="14"/>
                 <TextBox x:Name="DiscNumberTextBox" Width="45" Height="30" FontSize="14"
-                         VerticalContentAlignment="Center" Text="1" Margin="0,0,6,0"/>
-                <Button Content="Apply Disc" Height="30" FontSize="13" Padding="10,0"
-                        Margin="0,0,16,0" Click="ApplyDiscNumber_Click"/>
+                         VerticalContentAlignment="Center" Text="1" Margin="0,0,12,0"/>
 
-                <!-- Track -->
-                <TextBlock Text="Set Track:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="14"/>
+                <TextBlock Text="Track:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="14"/>
                 <TextBox x:Name="TrackNumberTextBox" Width="45" Height="30" FontSize="14"
-                         VerticalContentAlignment="Center" Text="1" Margin="0,0,6,0"/>
-                <Button Content="Apply Track" Height="30" FontSize="13" Padding="10,0"
-                        Margin="0,0,16,0" Click="ApplyTrackNumber_Click"/>
+                         VerticalContentAlignment="Center" Text="1" Margin="0,0,12,0"/>
 
-                <!-- Title -->
-                <TextBlock Text="Set Title:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="14"/>
-                <TextBox x:Name="TitleTextBox" Width="240" Height="30" FontSize="14"
-                         VerticalContentAlignment="Center" Margin="0,0,6,0"/>
-                <Button Content="Apply Title" Height="30" FontSize="13" Padding="10,0"
-                        Click="ApplyTitle_Click"/>
+                <TextBlock Text="Title:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="14"/>
+                <TextBox x:Name="TitleTextBox" Width="260" Height="30" FontSize="14"
+                         VerticalContentAlignment="Center" Margin="0,0,12,0"/>
+
+                <Button Content="Apply" Height="30" FontSize="14" FontWeight="SemiBold"
+                        Padding="16,0" Click="Apply_Click"/>
             </StackPanel>
         </StackPanel>
 
         <!-- Track list -->
         <ListView x:Name="FileList" Grid.Row="2"
-          BorderBrush="#DDD" BorderThickness="1" FontSize="13"
-          SelectionChanged="FileList_SelectionChanged">
+                  BorderBrush="#DDD" BorderThickness="1" FontSize="13"
+                  SelectionChanged="FileList_SelectionChanged">
             <ListView.View>
                 <GridView>
-                    <!-- Checkbox column -->
                     <GridViewColumn Width="40">
                         <GridViewColumn.Header>
                             <CheckBox x:Name="HeaderCheckBox" HorizontalAlignment="Center" Click="HeaderCheckBox_Click"/>
@@ -91,7 +84,6 @@
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
 
-                    <!-- Disc -->
                     <GridViewColumn Width="60">
                         <GridViewColumn.Header>
                             <GridViewColumnHeader Content="Disc" Click="Sort_Click" Tag="Disc"/>
@@ -103,7 +95,6 @@
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
 
-                    <!-- Track -->
                     <GridViewColumn Width="70">
                         <GridViewColumn.Header>
                             <GridViewColumnHeader Content="Track" Click="Sort_Click" Tag="Track"/>
@@ -115,7 +106,6 @@
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
 
-                    <!-- Title -->
                     <GridViewColumn Width="520">
                         <GridViewColumn.Header>
                             <GridViewColumnHeader Content="Title" Click="Sort_Click" Tag="Title"/>
@@ -127,7 +117,6 @@
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
 
-                    <!-- Duration -->
                     <GridViewColumn Width="90">
                         <GridViewColumn.Header>
                             <GridViewColumnHeader Content="Duration" Click="Sort_Click" Tag="Duration"/>
