@@ -173,12 +173,140 @@ public partial class MainWindow : Window
         DiscNumberTextBox.Text = row.Disc.ToString();
         TrackNumberTextBox.Text = row.Track;
         TitleTextBox.Text = row.Title;
+        AlbumArtistTextBox.Text = row.AlbumArtist;
     }
 
     // -------------------------------------------------------
     // Tag writing handlers
     // -------------------------------------------------------
 
+    /// <summary>
+    /// Flattens a multi-disc album into a single continuous disc.
+    /// 
+    /// What it does:
+    /// 1. Asks the user for confirmation (because this permanently changes files)
+    /// 2. Finds the highest track number on Disc 1
+    /// 3. Takes every track from Disc 2, 3, etc.
+    /// 4. Renumbers those tracks so they continue sequentially after Disc 1
+    /// 5. Sets every track’s Disc Number to 1
+    /// 6. Writes all changes to the actual audio files
+    /// 7. Shows progress so the UI doesn’t appear frozen
+    /// </summary>
+    private async void FlattenToSingleDisc_Click(object sender, RoutedEventArgs e)
+    {
+        if (FileList.ItemsSource is not IEnumerable<TrackRow> allRows)
+        {
+            SetStatus("No tracks loaded");
+            return;
+        }
+
+        List<TrackRow> rows = allRows.ToList();
+
+        // Separate the tracks that are already on Disc 1 from the ones that need to be moved
+        List<TrackRow> disc1Tracks = rows.Where(r => r.Disc == 1).OrderBy(r => r.Track).ToList();
+        List<TrackRow> otherDiscTracks = rows.Where(r => r.Disc > 1)
+                                            .OrderBy(r => r.Disc)
+                                            .ThenBy(r => r.Track)
+                                            .ToList();
+
+        if (otherDiscTracks.Count == 0)
+        {
+            SetStatus("Nothing to flatten – everything is already on Disc 1");
+            return;
+        }
+
+        // -------------------------------------------------------
+        // Confirmation dialog – this is a destructive operation
+        // -------------------------------------------------------
+        MessageBoxResult confirm = MessageBox.Show(
+            $"This will move {otherDiscTracks.Count} track(s) from higher discs onto Disc 1\n" +
+            "and renumber them so they continue after the last track of Disc 1.\n\n" +
+            "This permanently changes your audio files.\n\n" +
+            "Do you want to continue?",
+            "Flatten to Single Disc",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+
+        if (confirm != MessageBoxResult.Yes)
+        {
+            SetStatus("Flatten cancelled");
+            return;
+        }
+
+        // Disable the button so the user can’t click it twice
+        // (We’ll re-enable it in the finally block)
+        if (sender is Button btn)
+            btn.IsEnabled = false;
+
+        try
+        {
+            // Find the next track number to use (one higher than the current highest on Disc 1)
+            int nextTrackNumber = 1;
+            if (disc1Tracks.Count > 0)
+            {
+                nextTrackNumber = disc1Tracks.Max(r => int.Parse(r.Track)) + 1;
+            }
+
+            int successCount = 0;
+            int failCount = 0;
+            int totalToProcess = otherDiscTracks.Count;
+            int current = 0;
+
+            // Process the tracks that need to be moved
+            foreach (TrackRow row in otherDiscTracks)
+            {
+                current++;
+                SetStatus($"Flattening… {current} of {totalToProcess}");
+
+                // Give the UI a chance to update the status text
+                await Task.Delay(1);
+
+                bool ok = true;
+
+                // 1. Change Disc Number to 1
+                if (_audioService.SetDiscNumber(row.FullPath, 1))
+                {
+                    row.Disc = 1;
+                }
+                else
+                {
+                    ok = false;
+                }
+
+                // 2. Assign the next sequential Track Number
+                if (_audioService.SetTrackNumber(row.FullPath, nextTrackNumber))
+                {
+                    row.Track = nextTrackNumber.ToString("D2");
+                }
+                else
+                {
+                    ok = false;
+                }
+
+                if (ok)
+                    successCount++;
+                else
+                    failCount++;
+
+                nextTrackNumber++;
+            }
+
+            // Re-sort the list so everything appears in the new order
+            FileList.ItemsSource = rows.OrderBy(r => r.Disc).ThenBy(r => r.Track).ToList();
+            UpdateSelectionStatus();
+
+            if (failCount == 0)
+                SetStatus($"Flatten complete – {successCount} track(s) updated");
+            else
+                SetStatus($"Flatten finished with issues – {successCount} updated, {failCount} failed");
+        }
+        finally
+        {
+            // Always re-enable the button
+            if (sender is Button btn2)
+                btn2.IsEnabled = true;
+        }
+    }
     /// <summary>
     /// Applies the current values in the Disc, Track, and Title text boxes
     /// to the target rows (checked rows, or the highlighted row if none are checked)
@@ -198,8 +326,10 @@ public partial class MainWindow : Window
         bool hasTrack = int.TryParse(TrackNumberTextBox.Text, out int newTrack) && newTrack >= 1;
         string newTitle = TitleTextBox.Text.Trim();
         bool hasTitle = !string.IsNullOrWhiteSpace(newTitle);
+        string newAlbumArtist = AlbumArtistTextBox.Text.Trim();
+        bool hasAlbumArtist = !string.IsNullOrWhiteSpace(newAlbumArtist);
 
-        if (!hasDisc && !hasTrack && !hasTitle)
+        if (!hasDisc && !hasTrack && !hasTitle && !hasAlbumArtist)
         {
             SetStatus("Nothing to apply – fill in at least one field");
             return;
@@ -234,6 +364,14 @@ public partial class MainWindow : Window
                 {
                     if (_audioService.SetTitle(row.FullPath, newTitle))
                         row.Title = newTitle;
+                    else
+                        allOk = false;
+                }
+
+                if (hasAlbumArtist)
+                {
+                    if (_audioService.SetAlbumArtist(row.FullPath, newAlbumArtist))
+                        row.AlbumArtist = newAlbumArtist;
                     else
                         allOk = false;
                 }
@@ -351,6 +489,7 @@ public partial class MainWindow : Window
                         row.Disc = track.DiscNumber;
                         row.Track = track.Number.ToString("D2");
                         row.Title = track.Title;
+                        row.AlbumArtist = track.AlbumArtist ?? "";
                         row.Duration = track.Duration.HasValue
                             ? track.Duration.Value.ToString(@"m\:ss")
                             : "";

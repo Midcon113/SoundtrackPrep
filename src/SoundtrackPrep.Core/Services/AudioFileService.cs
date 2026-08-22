@@ -23,10 +23,10 @@ public class AudioFileService
 
             Models.Track track = new Models.Track
             {
-                // Use the null-coalescing operator (??) to supply a default when ATL returns null
                 Number = atlTrack.TrackNumber ?? 0,
                 Title = atlTrack.Title ?? string.Empty,
                 Artist = string.IsNullOrWhiteSpace(atlTrack.Artist) ? null : atlTrack.Artist,
+                AlbumArtist = string.IsNullOrWhiteSpace(atlTrack.AlbumArtist) ? null : atlTrack.AlbumArtist,
                 DiscNumber = (atlTrack.DiscNumber == null || atlTrack.DiscNumber == 0) ? 1 : atlTrack.DiscNumber.Value,
                 Duration = atlTrack.DurationMs > 0
                     ? TimeSpan.FromMilliseconds(atlTrack.DurationMs)
@@ -42,7 +42,6 @@ public class AudioFileService
             return null;
         }
     }
-
     /// <summary>
     /// Writes a new Disc Number into the actual audio file on disk.
     /// This permanently changes the file.
@@ -103,6 +102,24 @@ public class AudioFileService
         {
             ATL.Track atlTrack = new ATL.Track(filePath);
             atlTrack.Title = title;
+            return atlTrack.Save();
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Writes a new Album Artist into the actual audio file on disk.
+    /// Returns true if the write succeeded, false if it failed.
+    /// </summary>
+    public bool SetAlbumArtist(string filePath, string albumArtist)
+    {
+        try
+        {
+            ATL.Track atlTrack = new ATL.Track(filePath);
+            atlTrack.AlbumArtist = albumArtist;
             return atlTrack.Save();
         }
         catch

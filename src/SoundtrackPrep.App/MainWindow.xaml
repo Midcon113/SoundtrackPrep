@@ -6,11 +6,17 @@
         xmlns:local="clr-namespace:SoundtrackPrep.App"
         mc:Ignorable="d"
         Title="SoundtrackPrep"
-        Height="620"
-        Width="1050"
+        Height="640"
+        Width="1100"
         WindowStartupLocation="CenterScreen">
 
     <Grid Margin="16">
+
+        <!-- Row layout:
+             0 = Header
+             1 = Buttons + editing tools
+             2 = Track list
+             3 = Status bar -->
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -18,73 +24,101 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
+        <!-- ==================== HEADER ==================== -->
         <TextBlock Grid.Row="0"
                    Text="SoundtrackPrep"
                    FontSize="22"
                    FontWeight="SemiBold"
                    Margin="0,0,0,12"/>
 
-        <!-- Buttons + Tools -->
+        <!-- ==================== BUTTONS + TOOLS ==================== -->
         <StackPanel Grid.Row="1" Margin="0,0,0,16">
 
             <!-- Main action buttons -->
             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                 <Button x:Name="SelectFolderButton"
                         Content="Select Folder…"
-                        Width="160" Height="36"
-                        FontSize="14" FontWeight="SemiBold"
-                        Margin="0,0,12,0"
+                        Width="150" Height="34"
+                        FontSize="13" FontWeight="SemiBold"
+                        Margin="0,0,10,0"
                         Click="SelectFolderButton_Click"/>
 
                 <Button Content="Select All"
-                        Width="100" Height="36" FontSize="14"
+                        Width="90" Height="34" FontSize="13"
                         Margin="0,0,8,0"
                         Click="SelectAllButton_Click"/>
 
                 <Button Content="Select None"
-                        Width="110" Height="36" FontSize="14"
+                        Width="100" Height="34" FontSize="13"
+                        Margin="0,0,8,0"
                         Click="SelectNoneButton_Click"/>
+
+                <Button Content="Flatten to Single Disc"
+                        Width="170" Height="34" FontSize="13"
+                        Click="FlattenToSingleDisc_Click"/>
             </StackPanel>
 
-            <!-- Tag editing tools -->
+            <!-- Tag editing fields + single Apply button -->
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Disc:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="14"/>
-                <TextBox x:Name="DiscNumberTextBox" Width="45" Height="30" FontSize="14"
-                         VerticalContentAlignment="Center" Text="1" Margin="0,0,12,0"/>
+                <TextBlock Text="Disc:" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="13"/>
+                <TextBox x:Name="DiscNumberTextBox"
+                         Width="42" Height="28" FontSize="13"
+                         VerticalContentAlignment="Center"
+                         Text="1" Margin="0,0,12,0"/>
 
-                <TextBlock Text="Track:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="14"/>
-                <TextBox x:Name="TrackNumberTextBox" Width="45" Height="30" FontSize="14"
-                         VerticalContentAlignment="Center" Text="1" Margin="0,0,12,0"/>
+                <TextBlock Text="Track:" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="13"/>
+                <TextBox x:Name="TrackNumberTextBox"
+                         Width="42" Height="28" FontSize="13"
+                         VerticalContentAlignment="Center"
+                         Text="1" Margin="0,0,12,0"/>
 
-                <TextBlock Text="Title:" VerticalAlignment="Center" Margin="0,0,6,0" FontSize="14"/>
-                <TextBox x:Name="TitleTextBox" Width="260" Height="30" FontSize="14"
-                         VerticalContentAlignment="Center" Margin="0,0,12,0"/>
+                <TextBlock Text="Title:" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="13"/>
+                <TextBox x:Name="TitleTextBox"
+                         Width="200" Height="28" FontSize="13"
+                         VerticalContentAlignment="Center"
+                         Margin="0,0,12,0"/>
 
-                <Button Content="Apply" Height="30" FontSize="14" FontWeight="SemiBold"
-                        Padding="16,0" Click="Apply_Click"/>
+                <TextBlock Text="Album Artist:" VerticalAlignment="Center" Margin="0,0,4,0" FontSize="13"/>
+                <TextBox x:Name="AlbumArtistTextBox"
+                         Width="160" Height="28" FontSize="13"
+                         VerticalContentAlignment="Center"
+                         Margin="0,0,12,0"/>
+
+                <Button Content="Apply"
+                        Height="28" FontSize="13" FontWeight="SemiBold"
+                        Padding="14,0"
+                        Click="Apply_Click"/>
             </StackPanel>
         </StackPanel>
 
-        <!-- Track list -->
-        <ListView x:Name="FileList" Grid.Row="2"
-                  BorderBrush="#DDD" BorderThickness="1" FontSize="13"
+        <!-- ==================== TRACK LIST ==================== -->
+        <ListView x:Name="FileList"
+                  Grid.Row="2"
+                  BorderBrush="#CCCCCC"
+                  BorderThickness="1"
+                  FontSize="13"
                   SelectionChanged="FileList_SelectionChanged">
+
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Width="40">
+                    <!-- Checkbox column -->
+                    <GridViewColumn Width="36">
                         <GridViewColumn.Header>
-                            <CheckBox x:Name="HeaderCheckBox" HorizontalAlignment="Center" Click="HeaderCheckBox_Click"/>
+                            <CheckBox x:Name="HeaderCheckBox"
+                                      HorizontalAlignment="Center"
+                                      Click="HeaderCheckBox_Click"/>
                         </GridViewColumn.Header>
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                          HorizontalAlignment="Center" Click="RowCheckBox_Click"/>
+                                          HorizontalAlignment="Center"
+                                          Click="RowCheckBox_Click"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
 
-                    <GridViewColumn Width="60">
+                    <!-- Disc -->
+                    <GridViewColumn Width="55">
                         <GridViewColumn.Header>
                             <GridViewColumnHeader Content="Disc" Click="Sort_Click" Tag="Disc"/>
                         </GridViewColumn.Header>
@@ -95,7 +129,8 @@
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
 
-                    <GridViewColumn Width="70">
+                    <!-- Track -->
+                    <GridViewColumn Width="60">
                         <GridViewColumn.Header>
                             <GridViewColumnHeader Content="Track" Click="Sort_Click" Tag="Track"/>
                         </GridViewColumn.Header>
@@ -106,7 +141,8 @@
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
 
-                    <GridViewColumn Width="520">
+                    <!-- Title -->
+                    <GridViewColumn Width="380">
                         <GridViewColumn.Header>
                             <GridViewColumnHeader Content="Title" Click="Sort_Click" Tag="Title"/>
                         </GridViewColumn.Header>
@@ -117,7 +153,8 @@
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
 
-                    <GridViewColumn Width="90">
+                    <!-- Duration -->
+                    <GridViewColumn Width="80">
                         <GridViewColumn.Header>
                             <GridViewColumnHeader Content="Duration" Click="Sort_Click" Tag="Duration"/>
                         </GridViewColumn.Header>
@@ -131,9 +168,13 @@
             </ListView.View>
         </ListView>
 
-        <!-- Status bar -->
-        <TextBlock x:Name="StatusText" Grid.Row="3"
-                   Text="Ready" Margin="0,12,0,0"
-                   FontSize="14" FontWeight="SemiBold" Foreground="#222"/>
+        <!-- ==================== STATUS BAR ==================== -->
+        <TextBlock x:Name="StatusText"
+                   Grid.Row="3"
+                   Text="Ready"
+                   Margin="0,12,0,0"
+                   FontSize="13"
+                   FontWeight="SemiBold"
+                   Foreground="#333333"/>
     </Grid>
 </Window>

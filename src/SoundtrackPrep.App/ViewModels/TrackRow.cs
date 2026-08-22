@@ -13,4 +13,5 @@ public class TrackRow
     public string Title { get; set; } = string.Empty;
     public string Duration { get; set; } = string.Empty; // e.g. "3:42"
     public string FullPath { get; set; } = string.Empty; // for tooltips / future use
+    public string AlbumArtist { get; set; } = string.Empty; // for Album Artist column
 }
